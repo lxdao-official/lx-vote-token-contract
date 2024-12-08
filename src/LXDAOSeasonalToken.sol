@@ -120,4 +120,8 @@ contract LXDAOSeasonalToken is ERC20, Ownable {
     function decimals() public pure virtual override returns (uint8) {
         return 0;
     }
+
+    function getHoldersCount() external view returns (uint256) {
+        return tokenHolders.length;
+    }
 }
