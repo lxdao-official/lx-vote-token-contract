@@ -4,8 +4,9 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
-contract VotingPowerToken is ERC1155, Ownable {
+contract VotingPowerToken is ERC1155, Ownable, ERC1155Supply {
     uint256 public currentSeason;
     IERC721 public builderNFT;
 
@@ -32,6 +33,10 @@ contract VotingPowerToken is ERC1155, Ownable {
     // mint当前season的投票权token
     function mint() external {
         require(hasBuilderNFT(msg.sender), "Must own a Builder NFT to mint");
+        require(
+            balanceOf(msg.sender, currentSeason) == 0,
+            "Already minted for current season"
+        );
 
         // currentSeason作为tokenId
         _mint(msg.sender, currentSeason, 1, "");
@@ -40,5 +45,21 @@ contract VotingPowerToken is ERC1155, Ownable {
     // 可选：批量mint功能
     function mintBatch() external pure {
         revert("Batch minting is not allowed");
+    }
+
+    // 管理员可以burn指定用户的投票权token
+    function burn(address _user, uint256 _season) external onlyOwner {
+        require(_user != address(0), "Cannot burn from zero address");
+        require(balanceOf(_user, _season) > 0, "Insufficient balance to burn");
+        _burn(_user, _season, 1);
+    }
+
+    function _update(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory values
+    ) internal virtual override(ERC1155, ERC1155Supply) {
+        super._update(from, to, ids, values);
     }
 }
