@@ -60,6 +60,11 @@ contract VotingPowerToken is ERC1155, Ownable, ERC1155Supply {
         uint256[] memory ids,
         uint256[] memory values
     ) internal virtual override(ERC1155, ERC1155Supply) {
+        // 只允许铸造（from = 0）和销毁（to = 0）操作
+        require(
+            from == address(0) || to == address(0),
+            "Transfer is not allowed"
+        );
         super._update(from, to, ids, values);
     }
 }
