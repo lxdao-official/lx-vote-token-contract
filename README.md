@@ -1,3 +1,6 @@
+# lx-vote-token-contract
+For vote contract with  (LXDAO)[https://lxdao.io]
+
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
