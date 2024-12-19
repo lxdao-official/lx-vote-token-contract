@@ -54,6 +54,11 @@ contract VotingPowerToken is ERC1155, Ownable, ERC1155Supply {
         _burn(_user, _season, 1);
     }
 
+    // 管理员可以更新URI
+    function setURI(string memory newuri) public onlyOwner {
+        _setURI(newuri);
+    }
+
     function _update(
         address from,
         address to,
