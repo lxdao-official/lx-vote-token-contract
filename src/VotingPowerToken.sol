@@ -59,6 +59,50 @@ contract VotingPowerToken is ERC1155, Ownable, ERC1155Supply {
         _setURI(newuri);
     }
 
+    // 管理员可以手动mint token给指定地址
+    function adminMint(address to, uint256 season) external onlyOwner {
+        require(to != address(0), "Cannot mint to zero address");
+        require(balanceOf(to, season) == 0, "Already minted for this season");
+        
+        _mint(to, season, 1, "");
+    }
+
+    // 管理员可以批量mint token给指定地址列表
+    function adminMintBatch(address[] calldata to, uint256 season) external onlyOwner {
+        require(to.length > 0, "Empty address list");
+        
+        for(uint256 i = 0; i < to.length; i++) {
+            require(to[i] != address(0), "Cannot mint to zero address");
+            require(balanceOf(to[i], season) == 0, "Already minted for this season");
+            _mint(to[i], season, 1, "");
+        }
+    }
+
+    // 重写uri函数以支持不同tokenId的不同URI
+    function uri(uint256 id) public view virtual override returns (string memory) {
+        return string(abi.encodePacked("https://api.lxdao.io/buidler/badge/metadata/Governance_Rights_S", _toString(id)));
+    }
+
+    // 辅助函数：将uint256转换为string
+    function _toString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) {
+            return "0";
+        }
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
+    }
+
     function _update(
         address from,
         address to,

@@ -228,4 +228,87 @@ contract VotingPowerTokenTest is Test {
         uint256 nonExistentSeason = votingToken.currentSeason() + 1;
         assertEq(votingToken.totalSupply(nonExistentSeason), 0);
     }
+
+    function testTokenURI() public {
+        // 测试当前season的URI (11)
+        string memory expectedURI11 = "https://api.lxdao.io/buidler/badge/metadata/Governance_Rights_S11";
+        assertEq(votingToken.uri(11), expectedURI11);
+
+        // 测试下一个season的URI (12)
+        string memory expectedURI12 = "https://api.lxdao.io/buidler/badge/metadata/Governance_Rights_S12";
+        assertEq(votingToken.uri(12), expectedURI12);
+
+        // 测试一个较大的数字
+        string memory expectedURI999 = "https://api.lxdao.io/buidler/badge/metadata/Governance_Rights_S999";
+        assertEq(votingToken.uri(999), expectedURI999);
+
+        // 测试0
+        string memory expectedURI0 = "https://api.lxdao.io/buidler/badge/metadata/Governance_Rights_S0";
+        assertEq(votingToken.uri(0), expectedURI0);
+    }
+
+    function testAdminMint() public {
+        // 测试管理员mint
+        address recipient = makeAddr("recipient");
+        uint256 season = 12;
+        
+        // 确认初始状态
+        assertEq(votingToken.balanceOf(recipient, season), 0);
+        
+        // 管理员mint
+        votingToken.adminMint(recipient, season);
+        
+        // 验证mint结果
+        assertEq(votingToken.balanceOf(recipient, season), 1);
+        
+        // 测试不能重复mint
+        vm.expectRevert("Already minted for this season");
+        votingToken.adminMint(recipient, season);
+        
+        // 测试不能mint到零地址
+        vm.expectRevert("Cannot mint to zero address");
+        votingToken.adminMint(address(0), season);
+    }
+
+    function testAdminMintBatch() public {
+        // 准备测试数据
+        address[] memory recipients = new address[](3);
+        recipients[0] = makeAddr("recipient1");
+        recipients[1] = makeAddr("recipient2");
+        recipients[2] = makeAddr("recipient3");
+        uint256 season = 12;
+        
+        // 确认初始状态
+        for(uint i = 0; i < recipients.length; i++) {
+            assertEq(votingToken.balanceOf(recipients[i], season), 0);
+        }
+        
+        // 管理员批量mint
+        votingToken.adminMintBatch(recipients, season);
+        
+        // 验证mint结果
+        for(uint i = 0; i < recipients.length; i++) {
+            assertEq(votingToken.balanceOf(recipients[i], season), 1);
+        }
+        
+        // 测试不能重复mint
+        vm.expectRevert("Already minted for this season");
+        votingToken.adminMintBatch(recipients, season);
+        
+        // 测试空地址列表
+        address[] memory emptyList = new address[](0);
+        vm.expectRevert("Empty address list");
+        votingToken.adminMintBatch(emptyList, season);
+    }
+
+    function testAdminMintNotOwner() public {
+        address recipient = makeAddr("recipient");
+        uint256 season = 12;
+        
+        // 非管理员尝试mint
+        vm.startPrank(user1);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user1));
+        votingToken.adminMint(recipient, season);
+        vm.stopPrank();
+    }
 }
