@@ -11,6 +11,7 @@ contract AdminMintBatch is Script {
         string memory privateKeyStr = vm.envString("PRIVATE_KEY");
         uint256 deployerPrivateKey = vm.parseUint(privateKeyStr);
         
+        
         // Connect to the network
         string memory rpcUrl = vm.envString("RPC_URL");
         vm.createSelectFork(rpcUrl);
