@@ -35,17 +35,17 @@ contract AdminMintBatch is Script {
         // Start broadcasting transactions
         vm.startBroadcast(deployerPrivateKey);
 
-        // Current season is 11
-        uint256 season = 11;
-        
+        // Current year is 2026
+        uint256 year = 2026;
+
         // Batch mint tokens
-        token.adminMintBatch(recipients, season);
+        token.adminMintBatch(recipients, year);
 
         // Stop broadcasting
         vm.stopBroadcast();
 
         // Log success
-        console.log("Successfully minted tokens for season", season);
+        console.log("Successfully minted tokens for year", year);
         console.log("Number of recipients:", recipients.length);
     }
 }

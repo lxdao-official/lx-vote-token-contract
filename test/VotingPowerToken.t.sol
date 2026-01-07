@@ -35,23 +35,23 @@ contract VotingPowerTokenTest is Test {
     }
 
     function testInitialState() public {
-        assertEq(votingToken.currentSeason(), 11);
+        assertEq(votingToken.currentYear(), 2026);
         assertEq(address(votingToken.builderNFT()), address(mockNFT));
     }
 
-    function testSetCurrentSeason() public {
-        uint256 newSeason = 12;
-        votingToken.setCurrentSeason(newSeason);
-        assertEq(votingToken.currentSeason(), newSeason);
+    function testSetCurrentYear() public {
+        uint256 newYear = 2027;
+        votingToken.setCurrentYear(newYear);
+        assertEq(votingToken.currentYear(), newYear);
     }
 
-    function testSetCurrentSeasonRevert() public {
-        uint256 invalidSeason = 10;
-        vm.expectRevert("New season must be greater than current");
-        votingToken.setCurrentSeason(invalidSeason);
+    function testSetCurrentYearRevert() public {
+        uint256 invalidYear = 2025;
+        vm.expectRevert("New year must be greater than current");
+        votingToken.setCurrentYear(invalidYear);
     }
 
-    function testSetCurrentSeasonNotOwner() public {
+    function testSetCurrentYearNotOwner() public {
         vm.startPrank(user1);
         vm.expectRevert(
             abi.encodeWithSelector(
@@ -59,7 +59,7 @@ contract VotingPowerTokenTest is Test {
                 user1
             )
         );
-        votingToken.setCurrentSeason(12);
+        votingToken.setCurrentYear(2027);
         vm.stopPrank();
     }
 
@@ -76,7 +76,7 @@ contract VotingPowerTokenTest is Test {
         vm.prank(user1);
         votingToken.mint();
 
-        assertEq(votingToken.balanceOf(user1, votingToken.currentSeason()), 1);
+        assertEq(votingToken.balanceOf(user1, votingToken.currentYear()), 1);
     }
 
     function testHasBuilderNFT() public {
@@ -96,7 +96,7 @@ contract VotingPowerTokenTest is Test {
         mockNFT.mint(user1, 1);
         vm.prank(user1);
         votingToken.mint();
-        assertEq(votingToken.balanceOf(user1, votingToken.currentSeason()), 1);
+        assertEq(votingToken.balanceOf(user1, votingToken.currentYear()), 1);
     }
 
     function testBurn() public {
@@ -106,13 +106,13 @@ contract VotingPowerTokenTest is Test {
         votingToken.mint();
 
         // 确认用户有token
-        assertEq(votingToken.balanceOf(user1, votingToken.currentSeason()), 1);
+        assertEq(votingToken.balanceOf(user1, votingToken.currentYear()), 1);
 
         // 管理员销毁token
-        votingToken.burn(user1, votingToken.currentSeason());
+        votingToken.burn(user1, votingToken.currentYear());
 
         // 验证token已被销毁
-        assertEq(votingToken.balanceOf(user1, votingToken.currentSeason()), 0);
+        assertEq(votingToken.balanceOf(user1, votingToken.currentYear()), 0);
     }
 
     function skip_testBurnNotOwner() public {
@@ -124,7 +124,7 @@ contract VotingPowerTokenTest is Test {
         // 记录初始余额
         uint256 initialBalance = votingToken.balanceOf(
             user1,
-            votingToken.currentSeason()
+            votingToken.currentYear()
         );
 
         // 非管理员尝试销毁token
@@ -136,42 +136,42 @@ contract VotingPowerTokenTest is Test {
                 user2
             )
         );
-        votingToken.burn(user1, votingToken.currentSeason());
+        votingToken.burn(user1, votingToken.currentYear());
         vm.stopPrank();
 
         // 验证余额未变
         assertEq(
-            votingToken.balanceOf(user1, votingToken.currentSeason()),
+            votingToken.balanceOf(user1, votingToken.currentYear()),
             initialBalance,
             "Balance should not change after failed burn"
         );
     }
 
-    function testBurnInvalidSeason() public {
+    function testBurnInvalidYear() public {
         // 给用户铸造NFT和投票权token
         mockNFT.mint(user1, 1);
         vm.prank(user1);
         votingToken.mint();
 
-        // 尝试销毁不存在的season的token
-        uint256 invalidSeason = votingToken.currentSeason() + 1;
+        // 尝试销毁不存在的year的token
+        uint256 invalidYear = votingToken.currentYear() + 1;
         vm.expectRevert("Insufficient balance to burn");
-        votingToken.burn(user1, invalidSeason);
+        votingToken.burn(user1, invalidYear);
     }
 
     function skip_testBurnZeroAddress() public {
         assertEq(
-            votingToken.balanceOf(address(0), votingToken.currentSeason()),
+            votingToken.balanceOf(address(0), votingToken.currentYear()),
             0
         );
         // 尝试对零地址进行销毁操作
         vm.expectRevert("Cannot burn from zero address");
-        votingToken.burn(address(0), votingToken.currentSeason());
+        votingToken.burn(address(0), votingToken.currentYear());
     }
 
     function testTotalSupply() public {
         // 初始供应量应该为0
-        assertEq(votingToken.totalSupply(votingToken.currentSeason()), 0);
+        assertEq(votingToken.totalSupply(votingToken.currentYear()), 0);
 
         // 给多个用户铸造NFT和投票权token
         mockNFT.mint(user1, 1);
@@ -183,7 +183,7 @@ contract VotingPowerTokenTest is Test {
         votingToken.mint();
 
         // 验证总供应量
-        assertEq(votingToken.totalSupply(votingToken.currentSeason()), 2);
+        assertEq(votingToken.totalSupply(votingToken.currentYear()), 2);
     }
 
     function testTotalSupplyAfterBurn() public {
@@ -192,41 +192,41 @@ contract VotingPowerTokenTest is Test {
         vm.prank(user1);
         votingToken.mint();
 
-        assertEq(votingToken.totalSupply(votingToken.currentSeason()), 1);
+        assertEq(votingToken.totalSupply(votingToken.currentYear()), 1);
 
         // 销毁token
-        votingToken.burn(user1, votingToken.currentSeason());
+        votingToken.burn(user1, votingToken.currentYear());
 
         // 验证总供应量减少
-        assertEq(votingToken.totalSupply(votingToken.currentSeason()), 0);
+        assertEq(votingToken.totalSupply(votingToken.currentYear()), 0);
     }
 
-    function testTotalSupplyDifferentSeasons() public {
-        // Season 11
+    function testTotalSupplyDifferentYears() public {
+        // Year 2026
         mockNFT.mint(user1, 1);
         vm.prank(user1);
         votingToken.mint();
 
-        uint256 season11 = votingToken.currentSeason();
-        assertEq(votingToken.totalSupply(season11), 1);
+        uint256 year2026 = votingToken.currentYear();
+        assertEq(votingToken.totalSupply(year2026), 1);
 
-        // 切换到 Season 12
-        votingToken.setCurrentSeason(12);
+        // 切换到 Year 2027
+        votingToken.setCurrentYear(2027);
 
-        // Season 12的铸造
+        // Year 2027的铸造
         mockNFT.mint(user2, 2);
         vm.prank(user2);
         votingToken.mint();
 
-        // 验证不同season的供应量
-        assertEq(votingToken.totalSupply(season11), 1);
-        assertEq(votingToken.totalSupply(votingToken.currentSeason()), 1);
+        // 验证不同year的供应量
+        assertEq(votingToken.totalSupply(year2026), 1);
+        assertEq(votingToken.totalSupply(votingToken.currentYear()), 1);
     }
 
-    function testTotalSupplyNonExistentSeason() public view {
-        // 查询不存在的season的供应量
-        uint256 nonExistentSeason = votingToken.currentSeason() + 1;
-        assertEq(votingToken.totalSupply(nonExistentSeason), 0);
+    function testTotalSupplyNonExistentYear() public view {
+        // 查询不存在的year的供应量
+        uint256 nonExistentYear = votingToken.currentYear() + 1;
+        assertEq(votingToken.totalSupply(nonExistentYear), 0);
     }
 
     function testTokenURI() public {
@@ -250,24 +250,24 @@ contract VotingPowerTokenTest is Test {
     function testAdminMint() public {
         // 测试管理员mint
         address recipient = makeAddr("recipient");
-        uint256 season = 12;
-        
+        uint256 year = 2027;
+
         // 确认初始状态
-        assertEq(votingToken.balanceOf(recipient, season), 0);
-        
+        assertEq(votingToken.balanceOf(recipient, year), 0);
+
         // 管理员mint
-        votingToken.adminMint(recipient, season);
-        
+        votingToken.adminMint(recipient, year);
+
         // 验证mint结果
-        assertEq(votingToken.balanceOf(recipient, season), 1);
-        
+        assertEq(votingToken.balanceOf(recipient, year), 1);
+
         // 测试不能重复mint
-        vm.expectRevert("Already minted for this season");
-        votingToken.adminMint(recipient, season);
-        
+        vm.expectRevert("Already minted for this year");
+        votingToken.adminMint(recipient, year);
+
         // 测试不能mint到零地址
         vm.expectRevert("Cannot mint to zero address");
-        votingToken.adminMint(address(0), season);
+        votingToken.adminMint(address(0), year);
     }
 
     function testAdminMintBatch() public {
@@ -276,39 +276,39 @@ contract VotingPowerTokenTest is Test {
         recipients[0] = makeAddr("recipient1");
         recipients[1] = makeAddr("recipient2");
         recipients[2] = makeAddr("recipient3");
-        uint256 season = 12;
-        
+        uint256 year = 2027;
+
         // 确认初始状态
-        for(uint i = 0; i < recipients.length; i++) {
-            assertEq(votingToken.balanceOf(recipients[i], season), 0);
+        for (uint i = 0; i < recipients.length; i++) {
+            assertEq(votingToken.balanceOf(recipients[i], year), 0);
         }
-        
+
         // 管理员批量mint
-        votingToken.adminMintBatch(recipients, season);
-        
+        votingToken.adminMintBatch(recipients, year);
+
         // 验证mint结果
-        for(uint i = 0; i < recipients.length; i++) {
-            assertEq(votingToken.balanceOf(recipients[i], season), 1);
+        for (uint i = 0; i < recipients.length; i++) {
+            assertEq(votingToken.balanceOf(recipients[i], year), 1);
         }
-        
+
         // 测试不能重复mint
-        vm.expectRevert("Already minted for this season");
-        votingToken.adminMintBatch(recipients, season);
-        
+        vm.expectRevert("Already minted for this year");
+        votingToken.adminMintBatch(recipients, year);
+
         // 测试空地址列表
         address[] memory emptyList = new address[](0);
         vm.expectRevert("Empty address list");
-        votingToken.adminMintBatch(emptyList, season);
+        votingToken.adminMintBatch(emptyList, year);
     }
 
     function testAdminMintNotOwner() public {
         address recipient = makeAddr("recipient");
-        uint256 season = 12;
-        
+        uint256 year = 2027;
+
         // 非管理员尝试mint
         vm.startPrank(user1);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user1));
-        votingToken.adminMint(recipient, season);
+        votingToken.adminMint(recipient, year);
         vm.stopPrank();
     }
 }

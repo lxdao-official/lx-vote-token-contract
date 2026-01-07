@@ -7,22 +7,22 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
 contract VotingPowerToken is ERC1155, Ownable, ERC1155Supply {
-    uint256 public currentSeason;
+    uint256 public currentYear;
     IERC721 public builderNFT;
 
     // 构造函数设置NFT合约地址
     constructor(address _builderNFTAddress) ERC1155("") Ownable(msg.sender) {
         builderNFT = IERC721(_builderNFTAddress);
-        currentSeason = 11; // 从第一季开始
+        currentYear = 2026; // 从2026年开始
     }
 
-    // 管理员可以设置当前season
-    function setCurrentSeason(uint256 _newSeason) external onlyOwner {
+    // 管理员可以设置当前year
+    function setCurrentYear(uint256 _newYear) external onlyOwner {
         require(
-            _newSeason > currentSeason,
-            "New season must be greater than current"
+            _newYear > currentYear,
+            "New year must be greater than current"
         );
-        currentSeason = _newSeason;
+        currentYear = _newYear;
     }
 
     // 检查用户是否持有BuilderNFT
@@ -30,16 +30,16 @@ contract VotingPowerToken is ERC1155, Ownable, ERC1155Supply {
         return builderNFT.balanceOf(_user) > 0;
     }
 
-    // mint当前season的投票权token
+    // mint当前year的投票权token
     function mint() external {
         require(hasBuilderNFT(msg.sender), "Must own a Builder NFT to mint");
         require(
-            balanceOf(msg.sender, currentSeason) == 0,
-            "Already minted for current season"
+            balanceOf(msg.sender, currentYear) == 0,
+            "Already minted for current year"
         );
 
-        // currentSeason作为tokenId
-        _mint(msg.sender, currentSeason, 1, "");
+        // currentYear作为tokenId
+        _mint(msg.sender, currentYear, 1, "");
     }
 
     // 可选：批量mint功能
@@ -48,10 +48,10 @@ contract VotingPowerToken is ERC1155, Ownable, ERC1155Supply {
     }
 
     // 管理员可以burn指定用户的投票权token
-    function burn(address _user, uint256 _season) external onlyOwner {
+    function burn(address _user, uint256 _year) external onlyOwner {
         require(_user != address(0), "Cannot burn from zero address");
-        require(balanceOf(_user, _season) > 0, "Insufficient balance to burn");
-        _burn(_user, _season, 1);
+        require(balanceOf(_user, _year) > 0, "Insufficient balance to burn");
+        _burn(_user, _year, 1);
     }
 
     // 管理员可以更新URI
@@ -60,21 +60,21 @@ contract VotingPowerToken is ERC1155, Ownable, ERC1155Supply {
     }
 
     // 管理员可以手动mint token给指定地址
-    function adminMint(address to, uint256 season) external onlyOwner {
+    function adminMint(address to, uint256 year) external onlyOwner {
         require(to != address(0), "Cannot mint to zero address");
-        require(balanceOf(to, season) == 0, "Already minted for this season");
-        
-        _mint(to, season, 1, "");
+        require(balanceOf(to, year) == 0, "Already minted for this year");
+
+        _mint(to, year, 1, "");
     }
 
     // 管理员可以批量mint token给指定地址列表
-    function adminMintBatch(address[] calldata to, uint256 season) external onlyOwner {
+    function adminMintBatch(address[] calldata to, uint256 year) external onlyOwner {
         require(to.length > 0, "Empty address list");
-        
-        for(uint256 i = 0; i < to.length; i++) {
+
+        for (uint256 i = 0; i < to.length; i++) {
             require(to[i] != address(0), "Cannot mint to zero address");
-            require(balanceOf(to[i], season) == 0, "Already minted for this season");
-            _mint(to[i], season, 1, "");
+            require(balanceOf(to[i], year) == 0, "Already minted for this year");
+            _mint(to[i], year, 1, "");
         }
     }
 
